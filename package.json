@@ -8,6 +8,9 @@
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
+  "dependencies": {
+    "@humeai/voice": "file:./pkgs/humeai-voice-0.0.1.tgz"
+  },
   "devDependencies": {
     "typescript": "^5.2.2",
     "vite": "^5.1.4"
