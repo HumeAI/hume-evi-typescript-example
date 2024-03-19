@@ -1,10 +1,10 @@
 import {
-  VoiceClient,
-  createConfig,
   base64ToBlob,
-  getAudioStream,
   checkForAudioTracks,
+  createConfig,
+  getAudioStream,
   getSupportedMimeType,
+  VoiceClient,
 } from '@humeai/voice';
 
 // Safe getElement utility function
@@ -17,35 +17,41 @@ const authBtn = getElementById<HTMLButtonElement>('auth-btn');
 const startBtn = getElementById<HTMLButtonElement>('start-btn');
 const endBtn = getElementById<HTMLButtonElement>('end-btn');
 const chat = getElementById<HTMLDivElement>('chat');
-
-let accessToken: string;
-let client: VoiceClient | null = null;
+// audio playback queue
 const audioQueue: Blob[] = [];
-
-let isPlaying = false;
-let currentAudio: HTMLAudioElement | null = null;
-
-let audioStream: MediaStream | null = null;
-let recorder: MediaRecorder | null = null;
-
+// mimeType support by the browser the application is running in
 const result = getSupportedMimeType();
 const mimeType = result.success ? result.mimeType : 'audio/webm';
+// token used to make authenticated request
+let accessToken: string;
+// the Hume EVI VoiceClient, includes methods for connecting to the interface and managing the Web Socket connection
+let client: VoiceClient | null = null;
+// flag which denotes whether audio is currently playing
+let isPlaying = false;
+// the current audio element to be played
+let currentAudio: HTMLAudioElement | null = null;
+// the stream of audio captured from the user's microphone
+let audioStream: MediaStream | null = null;
+// the recorder responsible for recording the audio stream to be prepared as the audio input
+let recorder: MediaRecorder | null = null;
 
 authBtn?.addEventListener('click', authenticate);
 startBtn?.addEventListener('click', connect);
 endBtn?.addEventListener('click', disconnect);
 
-async function authenticate() {
+/**
+ * Fetches access token using the API key and client secret specified within your environment variables
+ */
+async function authenticate(): Promise<void> {
   const apiKey = import.meta.env.VITE_HUME_API_KEY || '';
   const clientSecret = import.meta.env.VITE_HUME_CLIENT_SECRET || '';
-  const host = `localhost:5173`;
 
   const authString = `${apiKey}:${clientSecret}`;
   const encoded = btoa(authString);
-  const protocol = host.includes('localhost:') ? 'http' : 'https';
 
   try {
-    const res = await fetch(`${protocol}://${host}/oauth2-cc/token`, {
+    // see proxy configuration within the vite.config.js file
+    const res = await fetch(`http://localhost:5173/oauth2-cc/token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -58,6 +64,7 @@ async function authenticate() {
     });
     const data = (await res.json()) as { access_token: string };
     accessToken = String(data['access_token']);
+    // update ui state
     if (authBtn) authBtn.disabled = true;
     if (startBtn) startBtn.disabled = false;
   } catch (e) {
@@ -65,24 +72,22 @@ async function authenticate() {
   }
 }
 
-async function connect() {
-  if (startBtn) startBtn.disabled = true;
-  if (endBtn) endBtn.disabled = false;
-
+async function connect(): Promise<void> {
+  // creates minimal EVI configuration
   const config = createConfig({
     auth: {
       type: 'accessToken',
       value: accessToken,
     },
   });
-
+  // instantiates the VoiceClient with configuration
   client = VoiceClient.create(config);
-
+  // handler for Web Socket open event, triggered when connection is first established
   client.on('open', async () => {
     console.log('Web socket connection opened');
     await captureAudio();
   });
-
+  // handler for Web Socket message event, triggered whenever a message is received from the server through the Web Socket
   client.on('message', async (message) => {
     switch (message.type) {
       case 'user_message':
@@ -105,69 +110,93 @@ async function connect() {
         break;
     }
   });
-
+  // handler for Web Socket close event, triggered when connection is closed
   client.on('close', () => {
     console.log('Web socket connection closed');
   });
-
+  // establish secure Web Socket connection
   client.connect();
+  // update ui state
+  if (startBtn) startBtn.disabled = true;
+  if (endBtn) endBtn.disabled = false;
 }
 
-function disconnect() {
+function disconnect(): void {
+  // update ui state
   if (startBtn) startBtn.disabled = false;
   if (endBtn) endBtn.disabled = true;
-
+  // stop audio playback
   stopAudio();
-
+  // stop audio capture
   recorder?.stop();
   recorder = null;
   audioStream = null;
-
+  // closed the Web Socket connection
   client?.disconnect();
+  // adds "conversation ended" message to the chat
   appendMessage('system', 'Conversation ended.');
 }
 
-async function captureAudio() {
+async function captureAudio(): Promise<void> {
   audioStream = await getAudioStream();
+  // ensure there is only one audio audio track in the stream
   checkForAudioTracks(audioStream);
 
   recorder = new MediaRecorder(audioStream, { mimeType });
 
   recorder.ondataavailable = async ({ data }) => {
     if (data.size > 0 && client?.readyState === WebSocket.OPEN) {
+      // convert Blob to binary
       const buffer = await data.arrayBuffer();
-      client?.sendAudio(buffer); // Send the ArrayBuffer through the Web Socket
+      // Send binary (audio input) through the Web Socket
+      client?.sendAudio(buffer);
     }
   };
+  // capture audio input at a rate of 100ms (recommended)
   recorder.start(100);
 }
 
-function playAudio(mimeType: string) {
+function playAudio(mimeType: string): void {
   if (audioQueue.length > 0 && !isPlaying) {
+    // update isPlaying state
     isPlaying = true;
+    // pull next audio output from the queue
     const audioBlob = audioQueue.shift();
 
     if (audioBlob) {
       const audioUrl = URL.createObjectURL(audioBlob);
+      // converts Blob to AudioElement for playback
       currentAudio = new Audio(audioUrl);
+      // play audio
       currentAudio.play();
-
+      // callback for when audio finishes playing
       currentAudio.onended = async () => {
+        // update isPlaying state
         isPlaying = false;
+        // attempt to pull next audio output from queue
         if (audioQueue.length) playAudio(mimeType);
       };
     }
   }
 }
 
-function stopAudio() {
+/**
+ * Stops audio playback
+ */
+function stopAudio(): void {
   currentAudio?.pause();
   currentAudio = null;
   isPlaying = false;
   audioQueue.length = 0;
 }
 
-function appendMessage(role: string, content: string) {
+/**
+ * Adds message to Chat in the webpage's UI
+ *
+ * @param role the speaker associated with the audio transcription
+ * @param content transcript of the audio
+ */
+function appendMessage(role: string, content: string): void {
   const timestamp = new Date().toLocaleTimeString();
   const messageEl = document.createElement('p');
   messageEl.innerHTML = `<strong>[${timestamp}] ${role}:</strong> ${content}`;
