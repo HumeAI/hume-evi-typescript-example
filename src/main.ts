@@ -101,7 +101,7 @@ async function connect(): Promise<void> {
         const blob = base64ToBlob(audioOutput, mimeType);
         audioQueue.push(blob);
         if (audioQueue.length <= 1) {
-          await playAudio(mimeType);
+          await playAudio();
         }
         break;
 
@@ -156,7 +156,7 @@ async function captureAudio(): Promise<void> {
   recorder.start(100);
 }
 
-function playAudio(mimeType: string): void {
+function playAudio(): void {
   if (audioQueue.length > 0 && !isPlaying) {
     // update isPlaying state
     isPlaying = true;
@@ -174,7 +174,7 @@ function playAudio(mimeType: string): void {
         // update isPlaying state
         isPlaying = false;
         // attempt to pull next audio output from queue
-        if (audioQueue.length) playAudio(mimeType);
+        if (audioQueue.length) playAudio();
       };
     }
   }
