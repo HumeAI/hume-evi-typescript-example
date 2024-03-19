@@ -7,7 +7,12 @@ import {
   VoiceClient,
 } from '@humeai/voice';
 
-// safe getElement utility function
+/**
+ * type safe getElement utility function
+ *
+ * @param id safe getElement utility function
+ * @returns the HTML element if found
+ */
 function getElementById<T extends HTMLElement>(id: string): T | null {
   const element = document.getElementById(id);
   return element as T | null;
@@ -17,22 +22,38 @@ const authBtn = getElementById<HTMLButtonElement>('auth-btn');
 const startBtn = getElementById<HTMLButtonElement>('start-btn');
 const endBtn = getElementById<HTMLButtonElement>('end-btn');
 const chat = getElementById<HTMLDivElement>('chat');
-// audio playback queue
+/**
+ * audio playback queue
+ */
 const audioQueue: Blob[] = [];
-// mimeType support by the browser the application is running in
 const result = getSupportedMimeType();
+/**
+ * mimeType support by the browser the application is running in
+ */
 const mimeType = result.success ? result.mimeType : 'audio/webm';
-// token used to make authenticated request
+/**
+ * token used to make authenticated request
+ */
 let accessToken: string;
-// the Hume EVI VoiceClient, includes methods for connecting to the interface and managing the Web Socket connection
+/**
+ * the Hume EVI VoiceClient, includes methods for connecting to the interface and managing the Web Socket connection
+ */
 let client: VoiceClient | null = null;
-// flag which denotes whether audio is currently playing
+/**
+ * flag which denotes whether audio is currently playing
+ */
 let isPlaying = false;
-// the current audio element to be played
+/**
+ * the current audio element to be played
+ */
 let currentAudio: HTMLAudioElement | null = null;
-// the stream of audio captured from the user's microphone
+/**
+ * the stream of audio captured from the user's microphone
+ */
 let audioStream: MediaStream | null = null;
-// the recorder responsible for recording the audio stream to be prepared as the audio input
+/**
+ * the recorder responsible for recording the audio stream to be prepared as the audio input
+ */
 let recorder: MediaRecorder | null = null;
 
 authBtn?.addEventListener('click', authenticate);
