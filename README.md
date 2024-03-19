@@ -14,7 +14,7 @@ This project features a sample implementation of Hume's [Empathic Voice Interfac
 
 To run this project locally, ensure your development environment meets the following requirements:
 
-- [Node.js](https://nodejs.org/en) (`v18.0.0` or higher).
+- [Node.js](https://nodejs.org/en) (`v18.0.0` or higher)
 - [pnpm](https://pnpm.io/installation) (`v8.0.0` or higher)
 
 To check the versions of `pnpm` and `Node.js` installed on a Mac via the terminal, you can use the following commands:
@@ -40,6 +40,8 @@ If you haven't installed these tools yet, running these commands will result in 
 Next you'll need to set your environment variables necessary for authentication. You'll need your API key and client secret which are accessible from the portal. See our documentation on [getting your api keys](https://hume.docs.buildwithfern.com/docs/introduction/getting-your-api-key).
 
 After obtaining your API keys, you need to set them as environment variables. A quick way to do this is to run the following commands, however the variables will be lost when the terminal window is closed or the computer is rebooted.
+
+Note the `VITE` prefix to the environment variables. This prefix is required for vite to expose the environment variable to the client. For more information, see the [vite documentation](https://vitejs.dev/guide/env-and-mode) on environment variables and modes.
 
 ```sh
 export VITE_HUME_API_KEY=<YOUR_API_KEY>
