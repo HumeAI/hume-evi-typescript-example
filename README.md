@@ -12,21 +12,10 @@ This project features a sample implementation of Hume's [Empathic Voice Interfac
 
 ## Prerequisites
 
-### Node version
+To run this project locally, ensure your development environment meets the following requirements:
 
-Ensure your development environment meets the following requirement:
-
-- Node.js (`v18.0.0` or higher).
-
-To verify your Node.js version, run this command in your terminal:
-
-```sh
-node --version
-```
-
-If your Node.js version is below `18.0.0`, update it to meet the requirement. For updating Node.js, visit [Node.js' official site](https://nodejs.org/) or use a version management tool like nvm for a more seamless upgrade process.
-
-### Environment variables
+- [Node.js](https://nodejs.org/en) (`v18.0.0` or higher).
+- [pnpm](https://pnpm.io/installation) (`v8.0.0` or higher)
 
 Next you'll need to set your environment variables necessary for authentication. You'll need your API key and client secret which are accessible from the portal. See our documentation on [getting your api keys](https://hume.docs.buildwithfern.com/docs/introduction/getting-your-api-key).
 
