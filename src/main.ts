@@ -7,7 +7,7 @@ import {
   VoiceClient,
 } from '@humeai/voice';
 
-// Safe getElement utility function
+// safe getElement utility function
 function getElementById<T extends HTMLElement>(id: string): T | null {
   const element = document.getElementById(id);
   return element as T | null;
@@ -40,7 +40,7 @@ startBtn?.addEventListener('click', connect);
 endBtn?.addEventListener('click', disconnect);
 
 /**
- * Fetches access token using the API key and client secret specified within your environment variables
+ * fetches access token using the API key and client secret specified within your environment variables
  */
 async function authenticate(): Promise<void> {
   const apiKey = import.meta.env.VITE_HUME_API_KEY || '';
@@ -72,6 +72,9 @@ async function authenticate(): Promise<void> {
   }
 }
 
+/**
+ * instantiates interface config and client, sets up Web Socket handlers, and establishes secure Web Socket connection
+ */
 async function connect(): Promise<void> {
   // creates minimal EVI configuration
   const config = createConfig({
@@ -121,6 +124,9 @@ async function connect(): Promise<void> {
   if (endBtn) endBtn.disabled = false;
 }
 
+/**
+ * stops audio capture and playback, and closes the Web Socket connection
+ */
 function disconnect(): void {
   // update ui state
   if (startBtn) startBtn.disabled = false;
@@ -137,6 +143,9 @@ function disconnect(): void {
   appendMessage('system', 'Conversation ended.');
 }
 
+/**
+ * captures and records audio stream
+ */
 async function captureAudio(): Promise<void> {
   audioStream = await getAudioStream();
   // ensure there is only one audio audio track in the stream
@@ -157,7 +166,7 @@ async function captureAudio(): Promise<void> {
 }
 
 /**
- * Play the audio within the playback queue, converting each Blob into playable HTMLAudioElements
+ * play the audio within the playback queue, converting each Blob into playable HTMLAudioElements
  */
 function playAudio(): void {
   if (audioQueue.length > 0 && !isPlaying) {
@@ -184,7 +193,7 @@ function playAudio(): void {
 }
 
 /**
- * Stops audio playback
+ * stops audio playback
  */
 function stopAudio(): void {
   currentAudio?.pause();
@@ -194,12 +203,15 @@ function stopAudio(): void {
 }
 
 /**
- * Adds message to Chat in the webpage's UI
+ * adds message to Chat in the webpage's UI
  *
  * @param role the speaker associated with the audio transcription
  * @param content transcript of the audio
  */
-function appendMessage(role: string, content: string): void {
+function appendMessage(
+  role: 'user' | 'assistant' | 'system',
+  content: string
+): void {
   const timestamp = new Date().toLocaleTimeString();
   const messageEl = document.createElement('p');
   messageEl.innerHTML = `<strong>[${timestamp}] ${role}:</strong> ${content}`;
