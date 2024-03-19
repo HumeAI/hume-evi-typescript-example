@@ -39,12 +39,14 @@ If you haven't installed these tools yet, running these commands will result in 
 
 Next you'll need to set your environment variables necessary for authentication. You'll need your API key and client secret which are accessible from the portal. See our documentation on [getting your api keys](https://hume.docs.buildwithfern.com/docs/introduction/getting-your-api-key).
 
-After obtaining your API keys run the following commands to set your environment variables.
+After obtaining your API keys, you need to set them as environment variables. A quick way to do this is to run the following commands, however the variables will be lost when the terminal window is closed or the computer is rebooted.
 
 ```sh
 export VITE_HUME_API_KEY=<YOUR_API_KEY>
 export VITE_HUME_CLIENT_SECRET=<YOUR_CLIENT_SECRET>
 ```
+
+You can make these environment variables persistent by adding them to the `.env` file in the root folder of the repo, which currently exists with placeholders. Once the API secrets have been added to the file, they will persist there and you do not have to set them as environment variables going forward. The `.env` file is listed in the `.gitignore` of the repository, so there is no risk of accidentally committing these secrets to a public repository. 
 
 ## Serve project
 
