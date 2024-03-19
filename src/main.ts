@@ -156,6 +156,9 @@ async function captureAudio(): Promise<void> {
   recorder.start(100);
 }
 
+/**
+ * Play the audio within the playback queue, converting each Blob into playable HTMLAudioElements
+ */
 function playAudio(): void {
   if (audioQueue.length > 0 && !isPlaying) {
     // update isPlaying state
