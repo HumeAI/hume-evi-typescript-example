@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@humeai/voice": "file:./pkgs/humeai-voice-0.0.1.tgz"
+    "@humeai/voice": "0.0.0-beta.12"
   },
   "devDependencies": {
     "typescript": "^5.2.2",
